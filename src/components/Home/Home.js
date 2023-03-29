@@ -1,10 +1,10 @@
 import "./Home.css";
 import React from "react";
-import NextMatch from "../Match/Match";
+import Match from "../Match/Match";
 
 const Home = () => {
 	return (
-		<NextMatch />
+		<Match />
 	);
 };
 

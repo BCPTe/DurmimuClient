@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBoxArchive, faHouse, faUser, faRightFromBracket, faRightToBracket } from "@fortawesome/free-solid-svg-icons";
 
 function Header() {
-	const [isLogged, setIsLogged] = useState(true)
+	const [isLogged, setIsLogged] = useState(false)
 
 	return(
 		<Navbar bg="light" expand="lg">
@@ -27,12 +27,12 @@ function Header() {
 		 				<span className="label">ARCHIVE</span>
 					</Nav.Link>
 				</Nav>
-				<Nav activekey="">
-					<Nav.Link href="#profile">
+				<Nav>
+					<Nav.Link href="profile">
 						<FontAwesomeIcon icon={faUser} />
 						<span className="label">CHRISTIAN</span>
 					</Nav.Link>
-					<Nav.Link href="#logout">
+					<Nav.Link href={isLogged ? "/logout" : "/login"}>
 						<FontAwesomeIcon icon={isLogged ? faRightFromBracket : faRightToBracket} />
 		 				<span className="label">{isLogged ? "LOGOUT" : "LOGIN"}</span>
 					</Nav.Link>
