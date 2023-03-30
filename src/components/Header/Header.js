@@ -4,10 +4,11 @@ import "./Header.css";
 import "../../style/buttons.css";
 import logo_black from '../../assets/logo/logo_black.png';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBoxArchive, faHouse, faUser, faRightFromBracket, faRightToBracket } from "@fortawesome/free-solid-svg-icons";
+import { faBoxArchive, faHouse, faUser, faRightFromBracket, faRightToBracket, faCirclePlus } from "@fortawesome/free-solid-svg-icons";
 
 function Header() {
 	const [isLogged, setIsLogged] = useState(false)
+	const [name, setName] = useState("CHRISTIAN")
 
 	return(
 		<Navbar bg="light" expand="lg">
@@ -28,9 +29,9 @@ function Header() {
 					</Nav.Link>
 				</Nav>
 				<Nav>
-					<Nav.Link href="profile">
-						<FontAwesomeIcon icon={faUser} />
-						<span className="label">CHRISTIAN</span>
+					<Nav.Link href={isLogged ? "/profile" : "/register"}>
+						<FontAwesomeIcon icon={isLogged ? faUser : faCirclePlus} />
+						<span className="label">{isLogged ? {name} : "REGISTER"}</span>
 					</Nav.Link>
 					<Nav.Link href={isLogged ? "/logout" : "/login"}>
 						<FontAwesomeIcon icon={isLogged ? faRightFromBracket : faRightToBracket} />

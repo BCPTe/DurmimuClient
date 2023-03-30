@@ -6,7 +6,7 @@ const Footer = () => {
 	return (
 		<Row className='footer'>
 			<Col>
-				<span>&copy; BCPTe</span>
+				<span>&copy; Durmimu Macares</span>
 			</Col>
 		</Row>
 	)
