@@ -25,13 +25,12 @@ const Register = () => {
 
 		console.log("im going to submit: ", payload);
 
-		api.post("/api/v1/users/register", payload, {
-			headers: { 'Content-Type': 'application/json' }
-		})
-		.then(
-			response => console.log("response: ", response)
-		)
+		//TODO: PROBLEM CORS POLICY
 
+		api.post("/api/v1/users/register", payload)
+			.then(
+				response => console.log("response: ", response)
+			)
 	}
 
 	return (
@@ -57,7 +56,7 @@ const Register = () => {
 						<Form.Control type='email' placeholder="Email" onChange={(e) => setEmail(e.target.value)} required />
 					</FloatingLabel>
 					<FloatingLabel className="password-group" controlId="floatingPassword" label="Password">
-						<Form.Control type='password' placeholder="Password" onChange={(e) => setPassword(e.target.value)} required />
+						<Form.Control type='password' placeholder="Password" onChange={(e) => setPassword(e.target.value)} minLength={6} required />
 					</FloatingLabel>
 					<Button variant="secondary" type="submit">REGISTER</Button>
 					<Form.Text>or <a href='/login'>login</a> if you already have an account</Form.Text>

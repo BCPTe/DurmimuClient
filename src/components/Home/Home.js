@@ -2,9 +2,12 @@ import "./Home.css";
 import React from "react";
 import Match from "../Match/Match";
 
-const Home = () => {
+const Home = (props) => {
 	return (
+		<>
+		{props.user}
 		<Match />
+		</>
 	);
 };
 

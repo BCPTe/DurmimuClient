@@ -5,10 +5,10 @@ import "../../style/buttons.css";
 import logo_black from '../../assets/logo/logo_black.png';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBoxArchive, faHouse, faUser, faRightFromBracket, faRightToBracket, faCirclePlus } from "@fortawesome/free-solid-svg-icons";
+import { useAuth } from "../../Contexts/AuthContext";
 
-function Header() {
-	const [isLogged, setIsLogged] = useState(false)
-	const [name, setName] = useState("CHRISTIAN")
+const Header = () => {
+	const {authUser, setAuthUser, isLoggedIn, setIsLoggedIn} = useAuth()
 
 	return(
 		<Navbar bg="light" expand="lg">
@@ -29,13 +29,13 @@ function Header() {
 					</Nav.Link>
 				</Nav>
 				<Nav>
-					<Nav.Link href={isLogged ? "/profile" : "/register"}>
-						<FontAwesomeIcon icon={isLogged ? faUser : faCirclePlus} />
-						<span className="label">{isLogged ? {name} : "REGISTER"}</span>
+					<Nav.Link href={isLoggedIn ? "/profile" : "/register"}>
+						<FontAwesomeIcon icon={isLoggedIn ? faUser : faCirclePlus} />
+						<span className="label">{isLoggedIn ? authUser.name : "REGISTER"}</span>
 					</Nav.Link>
-					<Nav.Link href={isLogged ? "/logout" : "/login"}>
-						<FontAwesomeIcon icon={isLogged ? faRightFromBracket : faRightToBracket} />
-		 				<span className="label">{isLogged ? "LOGOUT" : "LOGIN"}</span>
+					<Nav.Link href={isLoggedIn ? "/logout" : "/login"}>
+						<FontAwesomeIcon icon={isLoggedIn ? faRightFromBracket : faRightToBracket} />
+		 				<span className="label">{isLoggedIn ? "LOGOUT" : "LOGIN"}</span>
 					</Nav.Link>
 				</Nav>
 				</Navbar.Collapse>

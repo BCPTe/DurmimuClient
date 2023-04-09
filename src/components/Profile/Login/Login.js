@@ -1,19 +1,37 @@
 import React, { useState } from 'react'
 import { Row, Form, Col, Button, FloatingLabel } from 'react-bootstrap'
 import '../Profile.css'
+import api from '../../../API/axiosConfig'
+import { useOutletContext } from 'react-router-dom'
+import bcrypt from 'bcryptjs'
+import { useAuth } from '../../../Contexts/AuthContext'
 
 const Login = () => {
 	/*STATES*/
-	const [username, setUsername] = useState("")
+	const { authUser, setAuthUser, isLoggedIn, setIsLoggedIn } = useAuth()
+
+	const [usernameOrEmail, setUsernameOrEmail] = useState("")
 	const [password, setPassword] = useState("")
 
 	const handleLogin = (e) => {
 		e.preventDefault();
-		let payload = JSON.stringify({
-			username: username,
-			password: password
+
+		const payload = JSON.stringify({
+			usernameOrEmail: usernameOrEmail,
+			password: bcrypt.hash(password)
 		})
-		console.log("submitted:", payload);
+
+		api.post("/api/v1/users/login", payload)
+			.then(response => {
+				console.log("response: ", response)
+				if (response.status === 200) setAuthUser({
+					name: response.data.name,
+					surname: response.data.surname,
+					username: response.data.username,
+					email: response.data.email,
+					birthdate: response.data.birthdate,
+				})
+			})
 	}
 
 	return (
@@ -21,8 +39,8 @@ const Login = () => {
 			<Col xs={8} md={6} lg={4}>
 				<Form onSubmit={handleLogin} className="profile-form">
 					<h4>Login</h4>
-					<FloatingLabel className="username-group" controlId="floatingUsername" label="Username">
-						<Form.Control type='username' placeholder="Username" onChange={(e) => setUsername(e.target.value)} required />
+					<FloatingLabel className="usernameoremail-group" controlId="floatingUsernameOrMail" label="Username or Email">
+						<Form.Control type='text' placeholder="Username or Email" onChange={(e) => setUsernameOrEmail(e.target.value)} required />
 					</FloatingLabel>
 					<FloatingLabel className="password-group" controlId="floatingPassword" label="Password">
 						<Form.Control type='password' placeholder="Password" onChange={(e) => setPassword(e.target.value)} required />
