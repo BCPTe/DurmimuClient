@@ -25,8 +25,6 @@ const Register = () => {
 
 		console.log("im going to submit: ", payload);
 
-		//TODO: PROBLEM CORS POLICY
-
 		api.post("/api/v1/users/register", payload)
 			.then(
 				response => console.log("response: ", response)
@@ -35,7 +33,7 @@ const Register = () => {
 
 	return (
 		<Row className='profile-form-container'>
-			<Col xs={8} md={6} lg={4}>
+			<Col xs={10} md={6} lg={4}>
 				<Form onSubmit={handleRegister} className="profile-form">
 					<h4>Register</h4>
 					<div className="name-surname-container">

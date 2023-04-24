@@ -1,11 +1,12 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useAuth } from '../../../Contexts/AuthContext'
 
 const Logout = () => {
-	const {authUser, setAuthUser, isLoggedIn, setIsLoggedIn} = useAuth()
+	const { logout } = useAuth()
 	
-	setAuthUser(null)
-	setIsLoggedIn(false)
+	useEffect(() => {
+		logout()
+	}, [])
 }
 
 export default Logout

@@ -5,7 +5,6 @@ import Match from "../Match/Match";
 const Home = (props) => {
 	return (
 		<>
-		{props.user}
 		<Match />
 		</>
 	);

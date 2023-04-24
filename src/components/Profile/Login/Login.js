@@ -2,13 +2,12 @@ import React, { useState } from 'react'
 import { Row, Form, Col, Button, FloatingLabel } from 'react-bootstrap'
 import '../Profile.css'
 import api from '../../../API/axiosConfig'
-import { useOutletContext } from 'react-router-dom'
-import bcrypt from 'bcryptjs'
 import { useAuth } from '../../../Contexts/AuthContext'
 
 const Login = () => {
 	/*STATES*/
-	const { authUser, setAuthUser, isLoggedIn, setIsLoggedIn } = useAuth()
+	// const { authUser, setAuthUser, isLoggedIn, setIsLoggedIn, isLoggedInAdmin, setIsLoggedInAdmin } = useAuth()
+	const { authInfo, setAuthInfo } = useAuth()
 
 	const [usernameOrEmail, setUsernameOrEmail] = useState("")
 	const [password, setPassword] = useState("")
@@ -16,27 +15,40 @@ const Login = () => {
 	const handleLogin = (e) => {
 		e.preventDefault();
 
+		// using slice() cause need a literal copy of d string, may dont needed, boh after vidimu
+		// const hashed = "test";
+		// bcrypt.hash(password).then(hash => hashed = hash.slice()).catch(err => console.log(err))
+
 		const payload = JSON.stringify({
 			usernameOrEmail: usernameOrEmail,
-			password: bcrypt.hash(password)
+			password: password
 		})
+		console.log("payload: ", payload)
 
 		api.post("/api/v1/users/login", payload)
 			.then(response => {
 				console.log("response: ", response)
-				if (response.status === 200) setAuthUser({
-					name: response.data.name,
-					surname: response.data.surname,
-					username: response.data.username,
-					email: response.data.email,
-					birthdate: response.data.birthdate,
-				})
+				if (response.status === 200) {
+					setAuthInfo(
+						{
+							authUser: {
+								name: response.data.name,
+								surname: response.data.surname,
+								username: response.data.username,
+								email: response.data.email,
+								birthdate: response.data.birthdate,
+								admin: response.data.admin
+							},
+							isLoggedIn: true,
+							isAdmin: response.data.admin ? true : false
+						})
+				}
 			})
 	}
 
 	return (
 		<Row className='profile-form-container'>
-			<Col xs={8} md={6} lg={4}>
+			<Col xs={10} md={6} lg={4}>
 				<Form onSubmit={handleLogin} className="profile-form">
 					<h4>Login</h4>
 					<FloatingLabel className="usernameoremail-group" controlId="floatingUsernameOrMail" label="Username or Email">
