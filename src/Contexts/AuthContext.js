@@ -1,15 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react'
-
-const noAuthenticated = {
-	authUser: null,
-	isLoggedIn: false,
-	isAdmin: false
-}
-
-const getAuthState = () => {
-	const authInfo = localStorage.getItem("authInfo");
-	return authInfo ? JSON.parse(authInfo) : noAuthenticated;
-}
+import api from '../API/axiosConfig'
+import { useCookies } from 'react-cookie';
 
 const AuthContext = React.createContext()
 
@@ -18,7 +9,7 @@ export const useAuth = () => {
 }
 
 export const AuthProvider = (props) => {
-	const [authInfo, setAuthInfo] = useState(getAuthState)
+	const [cookies, setCookie, removeCookie] = useCookies(['auth'])
 	// this is user infos structure:
 	// name: null,
 	// surname: null,
@@ -30,20 +21,47 @@ export const AuthProvider = (props) => {
 	// const [isLoggedIn, setIsLoggedIn] = useState(getAuthState("loggedIn"))
 	// const [isLoggedInAdmin, setIsLoggedInAdmin] = useState(getAuthState("loggedInAdmin"))
 
-	useEffect(() => {
-		localStorage.setItem("authInfo", JSON.stringify(authInfo))
-	}, [authInfo])
+	// useEffect(() => {
+	// 	setCookie("auth", JSON.stringify(cookies['auth']))
+	// }, [])
+
+	const authStatus = () => {
+		return cookies['auth']
+	}
+
+	const login = (payload) => {
+		api.post("/api/v1/users/login", payload)
+			.then(response => {
+				console.log("response: ", response)
+				if (response.status === 200) {
+					const authObj = {
+						authUser: {
+							name: response.data.name,
+							surname: response.data.surname,
+							username: response.data.username,
+							email: response.data.email,
+							birthdate: response.data.birthdate,
+							admin: response.data.admin
+						},
+						isLoggedIn: true,
+						isAdmin: response.data.admin ? true : false
+					}
+					setCookie("auth", authObj)
+					console.log(cookies['auth'])
+				}
+			})
+	}
 
 	const logout = () => {
-		console.warn("authInfo: ", authInfo)
-		localStorage.setItem("authInfo", JSON.stringify(noAuthenticated))
-		setAuthInfo(noAuthenticated)
+		console.warn("auth: ", cookies['auth'])
+		// localStorage.setItem("authInfo", JSON.stringify(noAuthenticated))
+		removeCookie("auth")
 	}
 
 	const value = {
-		authInfo,
-		setAuthInfo,
-		logout
+		login,
+		logout,
+		authStatus
 	}
 
 

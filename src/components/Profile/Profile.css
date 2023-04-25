@@ -41,3 +41,20 @@ a {
 a:hover, a:focus, a:active {
 	color: var(--bs-btn-bg);
 }
+
+.user-info .form-control {
+	height: 2.8rem;
+	font-size: .85rem;
+	line-height: 1;
+}
+
+.user-info .form-floating {
+	font-size: .75rem;
+}
+
+.profile-form.user-info {
+	gap: 8px;
+}
+.user-info .name-surname-container {
+	gap: 8px;
+}

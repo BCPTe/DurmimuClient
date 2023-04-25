@@ -5,9 +5,7 @@ import api from '../../../API/axiosConfig'
 import { useAuth } from '../../../Contexts/AuthContext'
 
 const Login = () => {
-	/*STATES*/
-	// const { authUser, setAuthUser, isLoggedIn, setIsLoggedIn, isLoggedInAdmin, setIsLoggedInAdmin } = useAuth()
-	const { authInfo, setAuthInfo } = useAuth()
+	const { login } = useAuth()
 
 	const [usernameOrEmail, setUsernameOrEmail] = useState("")
 	const [password, setPassword] = useState("")
@@ -24,26 +22,7 @@ const Login = () => {
 			password: password
 		})
 		console.log("payload: ", payload)
-
-		api.post("/api/v1/users/login", payload)
-			.then(response => {
-				console.log("response: ", response)
-				if (response.status === 200) {
-					setAuthInfo(
-						{
-							authUser: {
-								name: response.data.name,
-								surname: response.data.surname,
-								username: response.data.username,
-								email: response.data.email,
-								birthdate: response.data.birthdate,
-								admin: response.data.admin
-							},
-							isLoggedIn: true,
-							isAdmin: response.data.admin ? true : false
-						})
-				}
-			})
+		login(payload)
 	}
 
 	return (
