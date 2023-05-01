@@ -10,8 +10,6 @@ import { useCookies } from 'react-cookie';
 
 
 const Header = () => {
-	// debugger
-	// const { cookies } = useAuth()
 	const { authStatus } = useAuth()
 	const auth = authStatus()
 

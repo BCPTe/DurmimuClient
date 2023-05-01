@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react'
-import api from '../API/axiosConfig'
+import React, { useContext, useEffect } from 'react';
 import { useCookies } from 'react-cookie';
+import api from '../API/axiosConfig';
 
 const AuthContext = React.createContext()
 
@@ -10,20 +10,25 @@ export const useAuth = () => {
 
 export const AuthProvider = (props) => {
 	const [cookies, setCookie, removeCookie] = useCookies(['auth'])
-	// this is user infos structure:
-	// name: null,
-	// surname: null,
-	// date: null,
-	// username: null,
-	// email: null,
-	// password: null,
-	// admin = null
-	// const [isLoggedIn, setIsLoggedIn] = useState(getAuthState("loggedIn"))
-	// const [isLoggedInAdmin, setIsLoggedInAdmin] = useState(getAuthState("loggedInAdmin"))
 
+	// this is for debugging purpose (up to the "// || \\")
 	// useEffect(() => {
-	// 	setCookie("auth", JSON.stringify(cookies['auth']))
-	// }, [])
+	// 	const auth = {
+	// 		authUser: {
+	// 			name: "Christian",
+	// 			surname: "Gatto",
+	// 			username: "BCPTe",
+	// 			email: "djdjchri@gmail.com",
+	// 			birthdate: "2000-04-27",
+	// 			admin: true
+	// 		},
+	// 		isLoggedIn: true,
+	// 		isAdmin: true
+	// 	} 
+	// 	setCookie('auth', auth)
+	// }, [setCookie])
+	// || \\
+	
 
 	const authStatus = () => {
 		return cookies['auth']

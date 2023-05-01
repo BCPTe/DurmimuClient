@@ -11,24 +11,30 @@ import Login from './components/Profile/Login/Login';
 import Logout from './components/Profile/Login/Logout';
 import Register from './components/Profile/Register/Register';
 import NewMatch from './components/NewMatch/NewMatch';
+import PrivateRoutes from './components/PrivateRoutes/PrivateRoutes';
 import { useAuth } from './Contexts/AuthContext';
 import { useCookies } from 'react-cookie';
+import NotFound from './components/NotFound';
 
 function App() {
 	const { authStatus } = useAuth()
 	const auth = authStatus()
 
+
 	return (
 		<div className="App">
 			<Routes>
 				<Route exact path='/' element={<Layout />}>
+					<Route path='/*' element={<NotFound />} />
 					<Route exact path='/' element={<Home />} />
-					<Route path='/survey' element={!auth?.isLoggedIn ? <Navigate to='/' replace /> : <Survey />} />
 					<Route path='/archive' element={<Archive />} />
 					<Route path='/login' element={auth?.isLoggedIn ? <Navigate to='/' replace /> : <Login />} />
-					<Route path='/logout' element={!auth?.isLoggedIn ? <Navigate to='/login' replace /> : <Logout />} />
-					<Route path='/register' element={auth?.isLoggedIn ? <Navigate to='/login' replace /> : <Register />} />
-					<Route path='/profile' element={!auth?.isLoggedIn ? <Navigate to='/login' replace /> : <Profile />} />
+					<Route element={<PrivateRoutes />}>
+						<Route path='/register' element={<Register />} />
+						<Route path='/profile' element={<Profile />} />
+						<Route path='/logout' element={<Logout />} />
+						<Route path='/survey' element={<Survey />} />
+					</Route>
 					<Route path='/newmatch' element={!auth?.isLoggedIn || !auth?.isAdmin ? <Navigate to='/' replace /> : <NewMatch />} />
 				</Route>
 			</Routes>
