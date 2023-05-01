@@ -65,10 +65,10 @@ const Survey = () => {
 						<div className="d-flex w-100 flex-column">
 							<div className="fw-bold text-center mt-3 mb-1">Date che hai selezionato:</div>
 							<div className='dates-in-db'>
-								{datesInDb?.map(item =>
-									<div className="date" key={item.id}>
+								{datesInDb?.map((item, index) =>
+									<div className="date" key={index}>
 										<div>{printDate(item.date)}</div>
-										<Button variant='danger' key={item.id}>
+										<Button variant='danger' date-id={item.id}>
 											<FontAwesomeIcon icon={faTimes} />
 										</Button>
 									</div>
