@@ -1,35 +1,85 @@
-import React, { useState } from 'react'
-import { Row, Form, Col, Button, FloatingLabel } from 'react-bootstrap'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import React, { useEffect, useState } from 'react'
+import { Button, Col } from 'react-bootstrap'
+import Calendar from 'react-calendar'
+import 'react-calendar/dist/Calendar.css'
+import api from '../../API/axiosConfig'
+import { useAuth } from '../../Contexts/AuthContext'
 import './Survey.css'
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 
 const Survey = () => {
-	const [date, setDate] = useState("")
+	const { authStatus } = useAuth()
+	const auth = authStatus()
 
-	const getTodaysDate = () => {
-		const date = new Date()
-		// using of slice is due to getMonth and getDate return numbers without eventual leading 0
-		const today = date.getFullYear() + "-" + ('0' + (date.getMonth()+1)).slice(-2) + "-" + ('0' + (date.getDate())).slice(-2)
+	const [date, setDate] = useState(new Date())
+	const [datesInDb, setDatesInDb] = useState([])
 
-		return today
+	const printDate = (dateToPrint) => {
+		const temp = new Date(dateToPrint)
+		return temp.toLocaleDateString()
 	}
-	
-	const handleSubmitDate = () => {
-		console.log(date)
+
+	const getUserDates = () => {
+		api.get("/api/v1/surveys", {
+			params: { username: auth.authUser.username }
+		})
+			.then(response => {
+				setDatesInDb(response.data)
+			})
 	}
-	
+
+	const handleAddDate = () => {
+		const payload = {
+			user: auth.authUser.username,
+			date: date
+		}
+
+		api.post("", payload)
+	}
+
+	useEffect(() => {
+		getUserDates()
+		// console.warn("ECCO LE DATE NEL DB: ", datesInDb?.length)
+	}, [])
+
+	// useEffect(() => {
+	// 	// getUserDates()
+	// 	console.warn("ECCO LE DATE NEL DB: ", datesInDb)
+	// }, [datesInDb])
+
 	return (
-		<Row className='survey-form-container'>
-			<Col xs={10} md={6} lg={4}>
-				<Form onSubmit={handleSubmitDate} className="survey-form">
-					<h4>Select availability</h4>
-					<FloatingLabel className="date-group" controlId="floatingDate" label="Date">
-						<Form.Control type='date' min={getTodaysDate()} placeholder="Date" onChange={(e) => setDate(e.target.value)} required />
-					</FloatingLabel>
-					<Button variant="secondary" type="submit">CONFIRM</Button>
-				</Form>
+		<div className='survey-container'>
+			<Col xs={10} md={6} lg={4} className='min-50'>
+				<div className='survey-form'>
+					{datesInDb?.length < 2 &&
+						<>
+							<Calendar className={"custom-calendar"} onChange={setDate} value={date} />
+							<div className='calendar-btns'>
+								<Button variant='secondary' onClick={handleAddDate}>Add</Button>
+							</div>
+						</>
+					}
+					{datesInDb.length > 0 &&
+						<div className="d-flex w-100 flex-column">
+							<div className="fw-bold text-center mt-3 mb-1">Date che hai selezionato:</div>
+							<div className='dates-in-db'>
+								{datesInDb?.map(item =>
+									<div className="date" key={item.id}>
+										<div>{printDate(item.date)}</div>
+										<Button variant='danger' key={item.id}>
+											<FontAwesomeIcon icon={faTimes} />
+										</Button>
+									</div>
+								)}
+							</div>
+						</div>
+					}
+				</div>
 			</Col>
-		</Row>
+		</div>
+
 	)
 }
 
