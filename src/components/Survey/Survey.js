@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import React, { useEffect, useRef, useState } from 'react'
-import { Button, Col, Row, OverlayTrigger, Overlay, Popover } from 'react-bootstrap'
+import React, { useEffect, useState } from 'react'
+import { Button, Col, Row, OverlayTrigger, Popover } from 'react-bootstrap'
 import Calendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
 import api from '../../API/axiosConfig'
@@ -14,18 +14,48 @@ const Survey = () => {
 	const { authStatus } = useAuth()
 	const auth = authStatus()
 
+	// debugger
 	const [date, setDate] = useState(new Date())
-	const [datesInDb, setDatesInDb] = useState([{ date: "2000-4-27" }])
-	const [playersInDay, setPlayersInDay] = useState([{ name: auth.authUser.name, surname: auth.authUser.surname, username: auth.authUser.username }])
+	const [min, setMin] = useState(new Date())
+	const [max, setMax] = useState(new Date())
+	const [datesInDb, setDatesInDb] = useState([])
+	// for flipcard
+	const [flip, setFlip] = useState(false)
+	//
+	const [playersInDay, setPlayersInDay] = useState([])
 
 	const printDate = (dateToPrint) => {
 		const temp = new Date(dateToPrint)
 		return temp.toLocaleDateString()
 	}
 
+	// const classForPresentPlayers = ({ date, view }) => {
+	// 	// get all dates with users present
+	// 	if (presentDates.find(lDate => printDate(lDate) === date)) {
+	// 		return "class-for-present-date"
+	// 	}
+	// }
+
+	// FIXME: backend needs long and not string (adapt frontend to send long)
+	const getPlayersInDay = () => {
+		const dateInMillisecond = date.getTime()
+		api.get("/api/v1/surveys", {
+			params: {
+				date: dateInMillisecond
+			}
+		})
+			.then(response => {
+				setPlayersInDay(response.data.players)
+			})
+	}
+	// useEffect(() => {
+	// 	console.log(playersInDay)
+	// }, [playersInDay])
+
+
 	const getUserDates = () => {
 		api.get("/api/v1/surveys", {
-			params: { username: auth.authUser.username }
+			params: { user: auth.authUser.username }
 		})
 			.then(response => {
 				setDatesInDb(response.data)
@@ -34,43 +64,46 @@ const Survey = () => {
 
 	const handleAddDate = () => {
 		const payload = {
-			user: auth.authUser.username,
-			date: date
+			operation: "add",
+			username: auth.authUser.username,
+			date: date.getTime()
 		}
 
-		// TODO: IMPLEMENT IN BACKEND
-		api.post("/api/v1/surveys/add", payload)
+		// DONE: IMPLEMENT IN BACKEND
+		api.post("/api/v1/surveys", payload)
+			.then(response => {
+				getUserDates()
+			})
+			.catch(err => {
+				console.warn(err)
+			})
 	}
 
+	// get all players in the selected day
 	useEffect(() => {
-		const payload = {
-			date: date
-		}
-
-		// TODO: IMPLEMENT IN BACKEND
-		api.get("/api/v1/surveys", {
-			params: { date: date }
-		})
-			.then(response => {
-				setPlayersInDay(response.data)
-			})
+		getPlayersInDay()
 	}, [date])
 
 
+	// INITIALIZATION PARAMS
 	useEffect(() => {
+		// get all players for day selected on load
+		getPlayersInDay()
+		// get all dates selected by current user (authenticated user)
 		getUserDates()
-		// console.warn("ECCO LE DATE NEL DB: ", datesInDb?.length)
+		// declaring&setting max date available for survey (2 months from now)
+		const today = new Date(new Date().getTime())
+		min.setHours(0, 0, 0, 0)
+		max.setMonth(today.getMonth() + 2)
 	}, [])
-
-	// for flipcard
-	const [flip, setFlip] = useState(false)
-	//
 
 
 	const handleRemoveAvailability = () => {
 		// TODO: IMPLEMENT IN BACKEND
 	}
 	//
+
+
 
 
 	return (
@@ -80,14 +113,21 @@ const Survey = () => {
 					<div className='survey-form'>
 						{datesInDb?.length < 2 &&
 							<>
-								<Calendar className="custom-calendar" onChange={setDate} value={date} />
+								{/* create calendar with minDate today and maxDate 2 month from today */}
+								<Calendar minDate={min}
+									maxDate={max}
+									className="custom-calendar" onChange={setDate} value={date}
+								// tileClassName={classForPresentPlayers}
+								/>
 								<div className='calendar-btns'>
 									<Button variant='secondary' onClick={handleAddDate}>Add</Button>
-									<Button variant='outline-primary' onClick={() => setFlip(!flip)}>View {playersInDay.length} players</Button>
+									{playersInDay &&
+										<Button variant='outline-primary' onClick={() => setFlip(!flip)}>View {playersInDay.length} players</Button>
+									}
 								</div>
 							</>
 						}
-						{datesInDb.length > 0 &&
+						{datesInDb?.length > 0 &&
 							<div className="d-flex w-100 flex-column">
 								<div className="fw-bold text-center mt-1 mb-1">Date che hai selezionato:</div>
 								<div className='dates-in-db'>
@@ -120,7 +160,7 @@ const Survey = () => {
 					</div>
 					<div className='survey-form'>
 						<div className="players-in-day">
-							{playersInDay.map((player, index) =>
+							{playersInDay?.map((player, index) =>
 								<Row className="player" key={index}>
 									<Col sm={8}>
 										<FontAwesomeIcon icon={faUser} />
