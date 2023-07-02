@@ -15,45 +15,36 @@ const Survey = () => {
 
 	// debugger
 	const [date, setDate] = useState(new Date());
-	const [min] = useState(new Date());
-	const [max] = useState(new Date());
-	const [datesInDb, setDatesInDb] = useState([]);
+	const [min] = useState(new Date()); // that's the current day
+	const [max] = useState(new Date()); // that's +2 months from current day
+	const [userDates, setUserDates] = useState([]);
 	// for flipcard
 	const [flip, setFlip] = useState(false);
 	//
 	const [playersInDay, setPlayersInDay] = useState([]);
+	const [surveyFull, setSurveyFull] = useState([]);
 
 	const printDate = (dateToPrint) => {
 		const temp = new Date(dateToPrint);
 		return temp.toLocaleDateString();
 	};
 
-	// const classForPresentPlayers = ({ date, view }) => {
-	// 	// get all dates with users present
-	// 	if (presentDates.find(lDate => printDate(lDate) === date)) {
-	// 		return "class-for-present-date"
-	// 	}
-	// }
-
 	const getPlayersInDay = () => {
 		const dateInMillisecond = date.getTime();
 		api.get("/api/v1/surveys", {
 			params: {
-				date: dateInMillisecond
+				date: dateInMillisecond,
 			},
 		}).then((response) => {
 			setPlayersInDay(response.data.players);
 		});
 	};
-	// useEffect(() => {
-	// 	console.log(playersInDay)
-	// }, [playersInDay])
 
 	const getUserDates = () => {
 		api.get("/api/v1/surveys", {
 			params: { user: auth.authUser.username },
 		}).then((response) => {
-			setDatesInDb(response.data);
+			setUserDates(response.data);
 		});
 	};
 
@@ -94,6 +85,22 @@ const Survey = () => {
 			});
 	};
 
+	const getUsedSurveys = () => {
+		api.get("/api/v1/surveys")
+		.then((response) => {
+			var usedDates = response.data.filter(s => s.players.length > 0)
+			setSurveyFull(usedDates.map(d => d.date))
+			console.log(surveyFull)
+			// if (
+			// 	response.data.hasOwnProperty("players") &&
+			// 	response.data.players.length > 0
+			// ) {
+			// 	console.log("ritorno la classe");
+			// 	return "highlight";
+			// }
+		});
+	};
+
 	// get all players in the selected day
 	useEffect(() => {
 		getPlayersInDay();
@@ -105,6 +112,8 @@ const Survey = () => {
 		getPlayersInDay();
 		// get all dates selected by current user (authenticated user)
 		getUserDates();
+		// get all surveys with at least one player
+		getUsedSurveys();
 		// declaring&setting max date available for survey (2 months from now)
 		const today = new Date(new Date().getTime());
 		min.setHours(0, 0, 0, 0);
@@ -113,14 +122,10 @@ const Survey = () => {
 
 	return (
 		<div className="survey-container">
-			<Col
-				xs={10}
-				md={5}
-				lg={4}
-				className="h-75">
+			<Col xs={10} md={5} lg={4} className="h-75">
 				<ReactCardFlip isFlipped={flip}>
 					<div className="survey-form">
-						{datesInDb?.length < 2 && (
+						{userDates?.length < 2 && (
 							<>
 								{/* create calendar with minDate today and maxDate 2 month from today */}
 								<Calendar
@@ -129,38 +134,47 @@ const Survey = () => {
 									className="custom-calendar"
 									onChange={setDate}
 									value={date}
-									// tileClassName={classForPresentPlayers}
+									tileClassName={({date, view}) => {
+										if(surveyFull.includes(date.getTime()))
+											return "highlight"
+									}}
 								/>
 								<div className="calendar-btns">
 									<Button
 										variant="secondary"
-										onClick={handleAddDate}>
+										onClick={handleAddDate}
+									>
 										Add
 									</Button>
 									<Button
-										variant="outline-primary" onClick={() => setFlip(!flip)} disabled={
+										variant="outline-primary"
+										onClick={() => setFlip(!flip)}
+										disabled={
 											!playersInDay ||
 											typeof playersInDay ===
 												"undefined" ||
 											playersInDay.length <= 0
-										}>
-										{(playersInDay && playersInDay.length>0) && "View"}{" "}
+										}
+									>
+										{playersInDay &&
+											playersInDay.length > 0 &&
+											"View"}{" "}
 										{playersInDay ? playersInDay.length : 0}{" "}
-										{playersInDay !== 1 ? "players" : "player"}
+										{playersInDay !== 1
+											? "players"
+											: "player"}
 									</Button>
 								</div>
 							</>
 						)}
-						{datesInDb?.length > 0 && (
+						{userDates?.length > 0 && (
 							<div className="d-flex w-100 flex-column">
 								<div className="fw-bold text-center mt-1 mb-1">
 									Date che hai selezionato:
 								</div>
 								<div className="dates-in-db">
-									{datesInDb?.map((item, index) => (
-										<div
-											className="date"
-											key={index}>
+									{userDates?.map((item, index) => (
+										<div className="date" key={index}>
 											<div>{printDate(item.date)}</div>
 											<OverlayTrigger
 												rootClose
@@ -193,20 +207,23 @@ const Survey = () => {
 																	}
 																	date-id={
 																		item.date
-																	}>
+																	}
+																>
 																	Yes
 																</Button>
 																<Button
 																	variant="secondary"
 																	onClick={() =>
 																		document.body.click()
-																	}>
+																	}
+																>
 																	No
 																</Button>
 															</div>
 														</Popover.Body>
 													</Popover>
-												}>
+												}
+											>
 												<Button variant="danger">
 													<FontAwesomeIcon
 														icon={faTimes}
@@ -223,12 +240,11 @@ const Survey = () => {
 					<div className="survey-form">
 						<div className="players-in-day">
 							{playersInDay?.map((player, index) => (
-								<Row
-									className="player"
-									key={index}>
+								<Row className="player" key={index}>
 									<Col
 										xs={7}
-										className="name-surname-container">
+										className="name-surname-container"
+									>
 										<FontAwesomeIcon icon={faUser} />
 										<span className="name-surname">
 											{player.name} {player.surname}
@@ -236,7 +252,8 @@ const Survey = () => {
 									</Col>
 									<Col
 										xs={4}
-										className="username-container text-end">
+										className="username-container text-end"
+									>
 										<span className="username fw-bold">
 											{player.username}
 										</span>
@@ -247,7 +264,8 @@ const Survey = () => {
 						<div className="down-btns">
 							<Button
 								variant="outline-primary"
-								onClick={() => setFlip(!flip)}>
+								onClick={() => setFlip(!flip)}
+							>
 								Return to calendar
 							</Button>
 						</div>
