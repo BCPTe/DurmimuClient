@@ -16,23 +16,26 @@
 	box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
 }
 
-.name-surname-container {
-	display: flex;
-	gap: 16px;
-}
-.name-group,
-.surname-group {
-	flex: 1;
+.profile-form {
+	.name-surname-container {
+		display: flex;
+		gap: 16px;
+	}
+	.name-group,
+	.surname-group {
+		flex: 1;
+	}
+	
+	.name-surname-container,
+	.birthdate-group,
+	.username-group,
+	.usernameoremail-group,
+	.email-group,
+	.password-group {
+		width: 100%;
+	}
 }
 
-.name-surname-container,
-.birthdate-group,
-.username-group,
-.usernameoremail-group,
-.email-group,
-.password-group {
-	width: 100%;
-}
 
 a {
 	color: #000;

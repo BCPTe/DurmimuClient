@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Row, Form, Col, Button, FloatingLabel } from 'react-bootstrap'
-import '../Profile.css'
+import '../Profile.scss'
 import api from '../../../API/axiosConfig'
 import { useAuth } from '../../../Contexts/AuthContext'
 

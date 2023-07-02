@@ -12,21 +12,21 @@ export const AuthProvider = (props) => {
 	const [cookies, setCookie, removeCookie] = useCookies(['auth'])
 
 	// this is for debugging purpose (up to the "// || \\")
-	useEffect(() => {
-		const auth = {
-			authUser: {
-				name: "Christian",
-				surname: "Gatto",
-				username: "BCPTe",
-				email: "djdjchri@gmail.com",
-				birthdate: "2000-04-27",
-				admin: true
-			},
-			isLoggedIn: true,
-			isAdmin: true
-		} 
-		setCookie('auth', auth)
-	}, [setCookie])
+	// useEffect(() => {
+	// 	const auth = {
+	// 		authUser: {
+	// 			name: "Christian",
+	// 			surname: "Gatto",
+	// 			username: "BCPTe",
+	// 			email: "djdjchri@gmail.com",
+	// 			birthdate: "2000-04-27",
+	// 			admin: true
+	// 		},
+	// 		isLoggedIn: true,
+	// 		isAdmin: true
+	// 	} 
+	// 	setCookie('auth', auth)
+	// }, [setCookie])
 	// || \\
 	
 
