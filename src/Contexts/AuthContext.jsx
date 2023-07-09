@@ -47,7 +47,7 @@ export const AuthProvider = (props) => {
 							username: response.data.username,
 							email: response.data.email,
 							birthdate: response.data.birthdate,
-							admin: response.data.admin
+							// admin: response.data.admin
 						},
 						isLoggedIn: true,
 						isAdmin: response.data.admin ? true : false

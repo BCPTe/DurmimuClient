@@ -8,6 +8,8 @@ import { useAuth } from "../../Contexts/AuthContext";
 import "./Survey.scss";
 import { faTimes, faUser } from "@fortawesome/free-solid-svg-icons";
 import ReactCardFlip from "react-card-flip";
+import { useParams, useSearchParams } from "react-router-dom";
+import NewMatchModal from "../Match/NewMatchModal/NewMatchModal";
 
 const Survey = () => {
 	const { authStatus } = useAuth();
@@ -22,7 +24,12 @@ const Survey = () => {
 	const [flip, setFlip] = useState(false);
 	//
 	const [playersInDay, setPlayersInDay] = useState([]);
-	const [surveyFull, setSurveyFull] = useState([]);
+	const [surveyUsed, setSurveyUsed] = useState([]); // >0 players
+	const [surveyFull, setSurveyFull] = useState([]); // >=12 players
+	// for modal
+	const [params, setParams] = useSearchParams()
+	const [showModal, setShowModal] = useState(params.has('openModal'))
+	// console.log(showModal);
 
 	const printDate = (dateToPrint) => {
 		const temp = new Date(dateToPrint);
@@ -60,13 +67,14 @@ const Survey = () => {
 			.then((response) => {
 				getUserDates();
 				getPlayersInDay();
+				getUsedSurveys();
 			})
 			.catch((err) => {
 				console.warn(err);
 			});
 	};
 
-	const handleRemoveAvailability = (e) => {
+	const handleRemoveDate = (e) => {
 		const date = e.target.getAttribute("date-id");
 		const payload = {
 			operation: "del",
@@ -79,6 +87,7 @@ const Survey = () => {
 			.then((response) => {
 				getUserDates();
 				getPlayersInDay();
+				getUsedSurveys();
 			})
 			.catch((err) => {
 				console.warn(err);
@@ -86,18 +95,12 @@ const Survey = () => {
 	};
 
 	const getUsedSurveys = () => {
-		api.get("/api/v1/surveys")
-		.then((response) => {
-			var usedDates = response.data.filter(s => s.players.length > 0)
-			setSurveyFull(usedDates.map(d => d.date))
-			console.log(surveyFull)
-			// if (
-			// 	response.data.hasOwnProperty("players") &&
-			// 	response.data.players.length > 0
-			// ) {
-			// 	console.log("ritorno la classe");
-			// 	return "highlight";
-			// }
+		api.get("/api/v1/surveys").then((response) => {
+			var usedDates = response.data.filter((s) => s.players.length > 0 && s.players.length < 12);
+			var fullDates = response.data.filter((s) => s.players.length >= 12);
+			setSurveyUsed(usedDates.map((d) => d.date));
+			setSurveyFull(fullDates.map(d => d.date));
+			console.log(surveyFull);
 		});
 	};
 
@@ -134,9 +137,11 @@ const Survey = () => {
 									className="custom-calendar"
 									onChange={setDate}
 									value={date}
-									tileClassName={({date, view}) => {
-										if(surveyFull.includes(date.getTime()))
-											return "highlight"
+									tileClassName={({ date, view }) => {
+										if (surveyFull.includes(date.getTime()))
+											return "full-dates";
+										else if (surveyUsed.includes(date.getTime()))
+											return "used-dates";
 									}}
 								/>
 								<div className="calendar-btns">
@@ -201,7 +206,7 @@ const Survey = () => {
 																	onClick={(
 																		e
 																	) =>
-																		handleRemoveAvailability(
+																		handleRemoveDate(
 																			e
 																		)
 																	}
@@ -272,6 +277,7 @@ const Survey = () => {
 					</div>
 				</ReactCardFlip>
 			</Col>
+			<NewMatchModal showModal={showModal} />
 		</div>
 	);
 };

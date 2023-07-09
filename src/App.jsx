@@ -10,7 +10,6 @@ import Profile from "./components/Profile/Profile";
 import Login from "./components/Profile/Login/Login";
 import Logout from "./components/Profile/Login/Logout";
 import Register from "./components/Profile/Register/Register";
-import NewMatch from "./components/NewMatch/NewMatch";
 import PrivateRoutes from "./components/PrivateRoutes/PrivateRoutes";
 import { useAuth } from "./Contexts/AuthContext";
 import { useCookies } from "react-cookie";
@@ -43,7 +42,7 @@ function App() {
 						<Route path="/logout" element={<Logout />} />
 						<Route path="/survey" element={<Survey />} />
 					</Route>
-					<Route
+					{/* <Route
 						path="/newmatch"
 						element={
 							!auth?.isLoggedIn || !auth?.isAdmin ? (
@@ -52,7 +51,7 @@ function App() {
 								<NewMatch />
 							)
 						}
-					/>
+					/> */}
 				</Route>
 			</Routes>
 		</div>
