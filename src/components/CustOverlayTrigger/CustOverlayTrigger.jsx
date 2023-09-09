@@ -19,7 +19,11 @@ const CustPopover = React.forwardRef(
 					<div className="d-flex justify-content-around mt-3">
 						<Button
 							variant="danger"
-							onClick={(e) => props.handleRemoveDate(e)}
+							onClick={(e) => {
+								props.setIsVisible(false)
+								props.handleRemoveDate(e)}
+							}
+							date-id={props.item.date}
 						>
 							Yes
 						</Button>
@@ -40,13 +44,16 @@ const CustOverlayTrigger = ( {item, printDate, handleRemoveDate} ) => {
 	const [isVisible, setIsVisible] = useState(false);
 	const _refTarget = React.createRef();
 
-	useEffect(() => {
-	  console.warn(item)
-	}, [])
+	// useEffect(() => {
+	//   console.warn(item)
+	// }, [])
 	
+
+	// FIXME: fix warnings (red) in console if possible
 
 	return (
 		<OverlayTrigger
+			rootClose
 			trigger="click"
 			placement="right"
 			show={isVisible}
