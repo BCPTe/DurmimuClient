@@ -52,7 +52,7 @@ const Header = () => {
 					</Nav>
 					<Nav>
 						{auth?.isLoggedIn && auth?.isAdmin && (
-							<Nav.Link href="/newmatch">
+							<Nav.Link href="/survey?openModal=true">
 								<FontAwesomeIcon icon={faVolleyball} />
 								<span className="label">CREATE NEW MATCH</span>
 							</Nav.Link>

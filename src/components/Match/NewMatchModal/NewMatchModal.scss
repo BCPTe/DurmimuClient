@@ -20,3 +20,26 @@
 .where-group {
 	width: 100%;
 }
+
+.modal-newmatch .modal-body {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+
+	.match-row {
+		width: 100%;
+		height: 50px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+
+		.match-date {
+			font-weight: bold;
+		}
+		.match-manage-btns {
+			display: flex;
+			gap: 5px;
+		}
+	}
+}

@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useEffect, useState } from "react";
+import React, { forwardRef, useEffect, useState } from "react";
 import { Button, Col, Row, OverlayTrigger, Popover } from "react-bootstrap";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -10,26 +10,25 @@ import { faTimes, faUser } from "@fortawesome/free-solid-svg-icons";
 import ReactCardFlip from "react-card-flip";
 import { useParams, useSearchParams } from "react-router-dom";
 import NewMatchModal from "../Match/NewMatchModal/NewMatchModal";
+import CustOverlayTrigger from "../CustOverlayTrigger/CustOverlayTrigger";
 
 const Survey = () => {
 	const { authStatus } = useAuth();
 	const auth = authStatus();
 
-	// debugger
 	const [date, setDate] = useState(new Date());
 	const [min] = useState(new Date()); // that's the current day
 	const [max] = useState(new Date()); // that's +2 months from current day
 	const [userDates, setUserDates] = useState([]);
-	// for flipcard
-	const [flip, setFlip] = useState(false);
-	//
 	const [playersInDay, setPlayersInDay] = useState([]);
 	const [surveyUsed, setSurveyUsed] = useState([]); // >0 players
 	const [surveyFull, setSurveyFull] = useState([]); // >=12 players
+	// for flipcard
+	const [flip, setFlip] = useState(false);
 	// for modal
 	const [params, setParams] = useSearchParams()
 	const [showModal, setShowModal] = useState(params.has('openModal'))
-	// console.log(showModal);
+
 
 	const printDate = (dateToPrint) => {
 		const temp = new Date(dateToPrint);
@@ -57,7 +56,7 @@ const Survey = () => {
 
 	const handleAddDate = () => {
 		const payload = {
-			operation: "add",
+			operation: "user-add",
 			username: auth.authUser.username,
 			date: date.getTime(),
 		};
@@ -77,7 +76,7 @@ const Survey = () => {
 	const handleRemoveDate = (e) => {
 		const date = e.target.getAttribute("date-id");
 		const payload = {
-			operation: "del",
+			operation: "user-del",
 			username: auth.authUser.username,
 			date: date,
 		};
@@ -98,9 +97,9 @@ const Survey = () => {
 		api.get("/api/v1/surveys").then((response) => {
 			var usedDates = response.data.filter((s) => s.players.length > 0 && s.players.length < 12);
 			var fullDates = response.data.filter((s) => s.players.length >= 12);
-			setSurveyUsed(usedDates.map((d) => d.date));
-			setSurveyFull(fullDates.map(d => d.date));
-			console.log(surveyFull);
+			setSurveyUsed(usedDates);
+			setSurveyFull(fullDates);
+			// console.log(surveyFull);
 		});
 	};
 
@@ -123,6 +122,7 @@ const Survey = () => {
 		max.setMonth(today.getMonth() + 2);
 	}, []);
 
+	
 	return (
 		<div className="survey-container">
 			<Col xs={10} md={5} lg={4} className="h-75">
@@ -138,10 +138,14 @@ const Survey = () => {
 									onChange={setDate}
 									value={date}
 									tileClassName={({ date, view }) => {
-										if (surveyFull.includes(date.getTime()))
-											return "full-dates";
-										else if (surveyUsed.includes(date.getTime()))
-											return "used-dates";
+										if(surveyFull.map(s => s.date).includes(date.getTime()))
+											return "full-dates"
+										else if(surveyUsed.map(s => s.date).includes(date.getTime()))
+											return "used-dates"
+										// if (surveyFull.date.includes(date.getTime()))
+										// 	return "full-dates";
+										// else if (surveyUsed.date.includes(date.getTime()))
+										// 	return "used-dates";
 									}}
 								/>
 								<div className="calendar-btns">
@@ -178,66 +182,15 @@ const Survey = () => {
 									Date che hai selezionato:
 								</div>
 								<div className="dates-in-db">
-									{userDates?.map((item, index) => (
+									{userDates?.map((item, index) => {
+										// console.log(userDates)
+										// FIXME: it renders 4 times when there is only one item (find out why)
+										return (
 										<div className="date" key={index}>
 											<div>{printDate(item.date)}</div>
-											<OverlayTrigger
-												rootClose
-												trigger="click"
-												placement="right"
-												overlay={
-													// TODO: at this moment it shows all popovers also on a single click. Needs to declare it separately.
-													// Find a way to manage this problem.
-													<Popover className="popover_del_component">
-														<Popover.Body>
-															<div className="text-center">
-																Do you really
-																want to remove
-																your
-																availability for{" "}
-																{printDate(
-																	item.date
-																)}
-																?
-															</div>
-															<div className="d-flex justify-content-around mt-3">
-																<Button
-																	variant="danger"
-																	onClick={(
-																		e
-																	) =>
-																		handleRemoveDate(
-																			e
-																		)
-																	}
-																	date-id={
-																		item.date
-																	}
-																>
-																	Yes
-																</Button>
-																<Button
-																	variant="secondary"
-																	onClick={() =>
-																		document.body.click()
-																	}
-																>
-																	No
-																</Button>
-															</div>
-														</Popover.Body>
-													</Popover>
-												}
-											>
-												<Button variant="danger">
-													<FontAwesomeIcon
-														icon={faTimes}
-														date-id={item.date}
-													/>
-												</Button>
-											</OverlayTrigger>
+											<CustOverlayTrigger item={item} printDate={printDate} handleRemoveDate={handleRemoveDate}></CustOverlayTrigger>
 										</div>
-									))}
+									)})}
 								</div>
 							</div>
 						)}

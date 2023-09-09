@@ -42,16 +42,16 @@ function App() {
 						<Route path="/logout" element={<Logout />} />
 						<Route path="/survey" element={<Survey />} />
 					</Route>
-					{/* <Route
-						path="/newmatch"
+					<Route
+						path="/survey?openModal=true"
 						element={
 							!auth?.isLoggedIn || !auth?.isAdmin ? (
 								<Navigate to="/" replace />
 							) : (
-								<NewMatch />
+								<Navigate to="/survey?openModal=true" />
 							)
 						}
-					/> */}
+					/>
 				</Route>
 			</Routes>
 		</div>
