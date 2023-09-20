@@ -183,8 +183,6 @@ const Survey = () => {
 								</div>
 								<div className="dates-in-db">
 									{userDates?.map((item, index) => {
-										// console.log(userDates)
-										// FIXME: it renders 4 times when there is only one item (find out why)
 										return (
 										<div className="date" key={index}>
 											<div>{printDate(item.date)}</div>
