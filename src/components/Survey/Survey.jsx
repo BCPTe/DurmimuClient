@@ -32,7 +32,8 @@ const Survey = () => {
 
 	const printDate = (dateToPrint) => {
 		const temp = new Date(dateToPrint);
-		return temp.toLocaleDateString();
+		// this way it prints a "0" if the month is between 1 and 9 (to always have a 2-digit notation)
+		return `${temp.getDate()}/${temp.getMonth()+1 < 10 ? `0${temp.getMonth()+1}` : temp.getMonth()+1}/${temp.getFullYear()}`;
 	};
 
 	const getPlayersInDay = () => {

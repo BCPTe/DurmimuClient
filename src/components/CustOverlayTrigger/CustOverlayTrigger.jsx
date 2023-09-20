@@ -4,8 +4,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { Button, OverlayTrigger, Popover } from "react-bootstrap";
 
 const CustPopover = React.forwardRef(({item, printDate, handleRemoveDate, isVisible, setIsVisible, ...props}, ref) => {
+	const handleClickInside = (e) => {
+		// Prevent the click inside the popover from propagating and closing the popover
+		e.stopPropagation();
+	};
+	  
 	return (
-		<Popover {...props} className="popover_del_component" ref={ref}>
+		<Popover {...props} className="popover_del_component" ref={ref} onClick={handleClickInside}>
 			<Popover.Body>
 				<div className="text-center">
 					Do you really want to remove your availability for{" "}
@@ -36,13 +41,22 @@ const CustPopover = React.forwardRef(({item, printDate, handleRemoveDate, isVisi
 
 const CustOverlayTrigger = ({ item, printDate, handleRemoveDate, ...props}) => {
 	const [isVisible, setIsVisible] = useState(false);
-	const _refTarget = React.createRef();
+	const _refTarget = React.useRef(null);
+
+	// for popover disappearing when click outside of itself
+	// CHANGE: IT'S NOT A "REACT WAY"
+	const handleOutsideClick = (event) => {
+		if (_refTarget.current && !_refTarget.current.contains(event.target)) {
+			setIsVisible(false);
+		}
+	};
+	document.addEventListener('click', handleOutsideClick);
+	//
 
 	return (
 		<OverlayTrigger
-			rootClose
-			trigger="click"
 			placement="right"
+			trigger="click"
 			show={isVisible}
 			overlay={
 				<CustPopover {...props}
@@ -51,11 +65,11 @@ const CustOverlayTrigger = ({ item, printDate, handleRemoveDate, ...props}) => {
 					setIsVisible={setIsVisible}
 					printDate={printDate}
 					handleRemoveDate={handleRemoveDate}
-					ref={_refTarget.current}
+					ref={_refTarget}
 				></CustPopover>
 			}
 		>
-			<Button variant="danger" onClick={() => setIsVisible(true)}>
+			<Button variant="danger" onClick={() => setIsVisible(true)} ref={_refTarget}>
 				<FontAwesomeIcon icon={faTimes} />
 			</Button>
 		</OverlayTrigger>
