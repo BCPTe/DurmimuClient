@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { forwardRef, useEffect, useState } from "react";
-import { Button, Col, Row, OverlayTrigger, Popover } from "react-bootstrap";
+import React, { createRef, forwardRef, useEffect, useRef, useState } from "react";
+import { Button, Col, Row, Overlay, Popover } from "react-bootstrap";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import api from "../../API/axiosConfig";
@@ -10,7 +10,6 @@ import { faTimes, faUser } from "@fortawesome/free-solid-svg-icons";
 import ReactCardFlip from "react-card-flip";
 import { useParams, useSearchParams } from "react-router-dom";
 import NewMatchModal from "../Match/NewMatchModal/NewMatchModal";
-import CustOverlayTrigger from "../CustOverlayTrigger/CustOverlayTrigger";
 
 const Survey = () => {
 	const { authStatus } = useAuth();
@@ -25,10 +24,15 @@ const Survey = () => {
 	const [surveyFull, setSurveyFull] = useState([]); // >=12 players
 	// for flipcard
 	const [flip, setFlip] = useState(false);
+	// for overlay
+	const buttonRefs = useRef([]);  // Initialize the ref with an empty array
+	const [popoverVisibility, setPopoverVisibility] = useState([]);
 	// for modal
 	const [params, setParams] = useSearchParams()
 	const [showModal, setShowModal] = useState(params.has('openModal'))
 
+
+	const buttonRef = useRef(null);
 
 	const printDate = (dateToPrint) => {
 		const temp = new Date(dateToPrint);
@@ -74,7 +78,8 @@ const Survey = () => {
 			});
 	};
 
-	const handleRemoveDate = (e) => {
+	const handleRemoveDate = (e, idx) => {
+		// debugger
 		const date = e.target.getAttribute("date-id");
 		const payload = {
 			operation: "user-del",
@@ -91,6 +96,12 @@ const Survey = () => {
 			})
 			.catch((err) => {
 				console.warn(err);
+			});
+
+		setPopoverVisibility((prevVisibility) => {
+			const newVisibility = [...prevVisibility];
+			newVisibility[idx] = false;  // Hide the popover for this date
+			return newVisibility;
 			});
 	};
 
@@ -123,6 +134,28 @@ const Survey = () => {
 		max.setMonth(today.getMonth() + 2);
 	}, []);
 
+	useEffect(() => {
+	  // Initialize popover visibility array
+		// console.warn(userDates)
+		const initialVisibility = new Array(userDates.length).fill(false)
+		setPopoverVisibility(initialVisibility)
+	}, [userDates]);
+
+	// for popovers
+	const createTargetFunction = (index) => {
+		// This function will be used as the target for the Overlay
+		return buttonRefs.current[index];
+	};
+	
+	const handlePopoverHide = (idx) => {
+		setPopoverVisibility((prevVisibility) => {
+			const newVisibility = [...prevVisibility];
+			newVisibility[idx] = false;
+			return newVisibility;
+		})
+		console.log('Popover hidden');
+	};
+	//
 	
 	return (
 		<div className="survey-container">
@@ -138,24 +171,23 @@ const Survey = () => {
 									className="custom-calendar"
 									onChange={setDate}
 									value={date}
+									tileDisabled={({date}) => surveyUsed.map(s => s.date).includes(date.getTime())}
 									tileClassName={({ date, view }) => {
 										if(surveyFull.map(s => s.date).includes(date.getTime()))
 											return "full-dates"
 										else if(surveyUsed.map(s => s.date).includes(date.getTime()))
 											return "used-dates"
-										// if (surveyFull.date.includes(date.getTime()))
-										// 	return "full-dates";
-										// else if (surveyUsed.date.includes(date.getTime()))
-										// 	return "used-dates";
 									}}
 								/>
 								<div className="calendar-btns">
-									<Button
+									{!surveyUsed.map(s => s.date).includes(date.getTime()) &&
+										<Button
 										variant="secondary"
 										onClick={handleAddDate}
-									>
-										Add
-									</Button>
+										>
+											Add
+										</Button>
+									}
 									<Button
 										variant="outline-primary"
 										onClick={() => setFlip(!flip)}
@@ -187,7 +219,40 @@ const Survey = () => {
 										return (
 										<div className="date" key={index}>
 											<div>{printDate(item.date)}</div>
-											<CustOverlayTrigger item={item} printDate={printDate} handleRemoveDate={handleRemoveDate}></CustOverlayTrigger>
+											<Button
+												variant="danger"
+												ref={(button) => (buttonRefs.current[index] = button)}
+											>
+												<FontAwesomeIcon icon={faTimes} onClick={() =>
+													setPopoverVisibility((prevVisibility) => {
+														const newVisibility = [...prevVisibility];
+														newVisibility[index] = !newVisibility[index];
+														return newVisibility;
+												})}/>
+											</Button>
+											<Overlay
+												rootClose
+												onHide={() => handlePopoverHide(index)}
+												placement="right"
+												show={popoverVisibility[index]}
+												target={createTargetFunction(index)}
+											>
+												<Popover className="popover_del_component">
+													<Popover.Body>
+														<div className="text-center">
+															Do you really want to remove your availability for {printDate(item.date)}?
+														</div>
+														<div className="d-flex justify-content-around mt-3">
+															<Button
+																variant="danger"
+																date-id={item.date}
+																onClick={(e) => handleRemoveDate(e, index)}
+																>Yes</Button>
+															<Button variant="secondary" onClick={() => handlePopoverHide(index)}>No</Button>
+														</div>
+													</Popover.Body>
+												</Popover>
+											</Overlay>
 										</div>
 									)})}
 								</div>
