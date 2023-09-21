@@ -31,9 +31,6 @@ const Survey = () => {
 	const [params, setParams] = useSearchParams()
 	const [showModal, setShowModal] = useState(params.has('openModal'))
 
-
-	const buttonRef = useRef(null);
-
 	const printDate = (dateToPrint) => {
 		const temp = new Date(dateToPrint);
 		// this way it prints a "0" if the month is between 1 and 9 (to always have a 2-digit notation)
@@ -219,40 +216,7 @@ const Survey = () => {
 										return (
 										<div className="date" key={index}>
 											<div>{printDate(item.date)}</div>
-											<Button
-												variant="danger"
-												ref={(button) => (buttonRefs.current[index] = button)}
-											>
-												<FontAwesomeIcon icon={faTimes} onClick={() =>
-													setPopoverVisibility((prevVisibility) => {
-														const newVisibility = [...prevVisibility];
-														newVisibility[index] = !newVisibility[index];
-														return newVisibility;
-												})}/>
-											</Button>
-											<Overlay
-												rootClose
-												onHide={() => handlePopoverHide(index)}
-												placement="right"
-												show={popoverVisibility[index]}
-												target={createTargetFunction(index)}
-											>
-												<Popover className="popover_del_component">
-													<Popover.Body>
-														<div className="text-center">
-															Do you really want to remove your availability for {printDate(item.date)}?
-														</div>
-														<div className="d-flex justify-content-around mt-3">
-															<Button
-																variant="danger"
-																date-id={item.date}
-																onClick={(e) => handleRemoveDate(e, index)}
-																>Yes</Button>
-															<Button variant="secondary" onClick={() => handlePopoverHide(index)}>No</Button>
-														</div>
-													</Popover.Body>
-												</Popover>
-											</Overlay>
+											<CustOverlayTrigger item={item} printDate={printDate} handleRemoveDate={handleRemoveDate}></CustOverlayTrigger>
 										</div>
 									)})}
 								</div>
