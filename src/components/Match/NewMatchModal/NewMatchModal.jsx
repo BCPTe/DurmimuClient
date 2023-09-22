@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import api from "../../../API/axiosConfig";
 import { Row, Col, Form, FloatingLabel, Button, Modal } from "react-bootstrap";
 import "./NewMatchModal.scss";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft, faArrowRight, faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 const NewMatchModal = (props) => {
-	const [when, setWhen] = useState(new Date());
-	const [where, setWhere] = useState("");
+	const [hour, setHour] = useState("")
+	const [location, setLocation] = useState("")
+	const [finalHour, setFinalHour] = useState(undefined)
 	// for showing modal
 	const [show, setShow] = useState(false);
 	const [showPlayersModal, setShowPlayersModal] = useState(false);
@@ -13,8 +16,10 @@ const NewMatchModal = (props) => {
 	const [surveyUsed, setSurveyUsed] = useState([]);
 	const [surveyFull, setSurveyFull] = useState([]);
 	const [playersList, setPlayersList] = useState([]);
-	// checkbox management
-	const [selectedCheck, setSelectedCheck] = useState([]);
+	// activating management
+	const [activating, setActivating] = useState(false)
+	const [insertingHour, setInsertingHour] = useState(false)
+	const [activationState, setActivationState] = useState([]);
 
 	const PlayersModal = () => {
 		return (
@@ -44,19 +49,24 @@ const NewMatchModal = (props) => {
 		return `${temp.getDate()}/${temp.getMonth()+1 < 10 ? `0${temp.getMonth()+1}` : temp.getMonth()+1}`;
 	};
 
-	const handleChangeCheck = (e) => {
-		console.log(e.target.value);
-		if (e.target.checked) {
-			setSelectedCheck([...selectedCheck, e.target.value]);
-		} else {
-			setSelectedCheck(selectedCheck.filter((c) => c !== e.target.value));
-		}
-	};
-
 	useEffect(() => {
 		console.log(playersList);
 		console.log(showPlayersModal);
 	}, [playersList]);
+
+	const convertStringToHour = (e, s) => {
+		// debugger
+		const hour_inserted = e.target.value;
+		setHour(hour_inserted)
+		
+		var temp = new Date(s.date)
+		var [h,m] = hour_inserted.split(":")
+		if (!h || !m) {
+			setFinalHour(undefined)
+			return
+		}
+		setFinalHour(new Date(temp.setHours(h,m)).getTime())
+	}
 
 	const handleSubmitNewMatch = (s) => {
 		var surveyDate = s.date
@@ -65,7 +75,9 @@ const NewMatchModal = (props) => {
 		const payload = {
 			operation: "set-active",
 			date: surveyDate,
-			active: surveyActive
+			finalDate: finalHour,
+			active: surveyActive,
+			location: location
 		}
 
 		api.post("/api/v1/surveys", payload)
@@ -97,6 +109,16 @@ const NewMatchModal = (props) => {
 		getUsedSurveys();
 	}, []);
 
+
+	// TODO: RETHINK THE ACTIVATIONSTATE METHOD
+	useEffect(() => {
+		// Initialize popover visibility array
+		const initialState = surveyUsed.map(s => s.active)
+		console.log(initialState)
+		setActivationState(initialState)
+	}, [surveyUsed]);
+
+	
 	return (
 		<>
 			<Modal
@@ -113,37 +135,81 @@ const NewMatchModal = (props) => {
 				</Modal.Header>
 				<Modal.Body className="matches">
 					{surveyUsed.length > 0 &&
-						surveyUsed.map((s) => (
+						surveyUsed.map((s, index) => (
 							<div className="match-row" key={s.date}>
 								<div className="match-date">{printDate(s.date)}</div>
-								<div className="match-manage-btns">
-									<Button
+								{!activationState[index] &&
+									<div className="match-manage-btns">
+										<Button
 										variant="secondary"
 										onClick={() => {
 											setPlayersList(s.players);
 											setShowPlayersModal(true);
 										}}
 										>
-										View {s.players.length} {s.players > 1 ? "players" : "player"}
-									</Button>
-									{s.active ? (
-										/* set survey active = false */
-									<Button
-									variant="danger"
-									onClick={() => handleSubmitNewMatch(s)}
-									>
+											View {s.players.length} {s.players > 1 ? "players" : "player"}
+										</Button>
+										{activationState[index] ? (
+											/* set survey active = false */
+											<Button
+											variant="danger"
+											onClick={() => handleSubmitNewMatch(s)}
+											>
 											Deactivate
-									</Button>
-									) : (
-										/* set survey active = true */
-									<Button
-									variant="success"
-									onClick={() => handleSubmitNewMatch(s)}
-									>
-										Activate
-									</Button>
-									)}
-								</div>
+											</Button>
+											) : (
+												/* set survey active = true */
+												<Button
+												variant="success"
+												onClick={() => {
+													setActivationState((prevActivation) => {
+														const newActivation = [...prevActivation];
+														newActivation[index] = !newActivation[index];
+														return newActivation;
+													})
+												}}
+												>
+											Activate
+										</Button>
+										)}
+									</div>
+								}
+								{activationState[index] &&
+									<div className="match-manage-btns">
+										{!insertingHour ? (
+											<>
+												<Form.Control placeholder="Enter location" value={location} onChange={(e) => setLocation(e.target.value)}/>
+												{location == "" ? (
+													<Button variant="danger" className="confirm-btn" onClick={
+														() => setActivationState((prevActivation) => {
+														const newActivation = [...prevActivation];
+														newActivation[index] = !newActivation[index];
+														return newActivation;
+													})}>
+														<FontAwesomeIcon icon={faTimes} />
+													</Button>
+												) : (
+													<Button variant="success" className="confirm-btn" onClick={() => setInsertingHour(true)}>
+														<FontAwesomeIcon icon={faArrowRight} />
+													</Button>
+												)}
+											</>
+										) : (
+											<>
+												<Form.Control placeholder="Enter hour" value={hour} onChange={(e) => convertStringToHour(e, s)}/>
+												{hour == "" ? (
+													<Button variant="danger" className="confirm-btn" onClick={() => setInsertingHour(false)}>
+														<FontAwesomeIcon icon={faArrowLeft} />
+													</Button>
+												) : (
+													<Button variant="success" className="confirm-btn" onClick={() => handleSubmitNewMatch(s)}>
+														<FontAwesomeIcon icon={faCheck} />
+													</Button>
+												)}
+											</>
+										)}
+									</div>
+								}
 							</div>
 						))}
 					{surveyUsed.length == 0 && 

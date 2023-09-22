@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { createRef, forwardRef, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button, Col, Row, Overlay, Popover } from "react-bootstrap";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -8,7 +8,7 @@ import { useAuth } from "../../Contexts/AuthContext";
 import "./Survey.scss";
 import { faTimes, faUser } from "@fortawesome/free-solid-svg-icons";
 import ReactCardFlip from "react-card-flip";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import NewMatchModal from "../Match/NewMatchModal/NewMatchModal";
 
 const Survey = () => {
@@ -30,9 +30,6 @@ const Survey = () => {
 	// for modal
 	const [params, setParams] = useSearchParams()
 	const [showModal, setShowModal] = useState(params.has('openModal'))
-
-
-	const buttonRef = useRef(null);
 
 	const printDate = (dateToPrint) => {
 		const temp = new Date(dateToPrint);
@@ -79,7 +76,6 @@ const Survey = () => {
 	};
 
 	const handleRemoveDate = (e, idx) => {
-		// debugger
 		const date = e.target.getAttribute("date-id");
 		const payload = {
 			operation: "user-del",
