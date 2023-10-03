@@ -155,7 +155,7 @@ const Survey = () => {
 	
 	return (
 		<div className="survey-container">
-			<Col xs={10} md={5} lg={4} className="h-75">
+			<Col xs={10} md={5} lg={4} className="">
 				<ReactCardFlip isFlipped={flip}>
 					<div className="survey-form">
 						{userDates?.length < 2 && (
@@ -167,7 +167,7 @@ const Survey = () => {
 									className="custom-calendar"
 									onChange={setDate}
 									value={date}
-									tileDisabled={({date}) => surveyUsed.map(s => s.date).includes(date.getTime())}
+									// tileDisabled={({date}) => surveyUsed.map(s => s.date).includes(date.getTime())}
 									tileClassName={({ date, view }) => {
 										if(surveyFull.map(s => s.date).includes(date.getTime()))
 											return "full-dates"

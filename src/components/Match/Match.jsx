@@ -12,7 +12,7 @@ const Match = () => {
 	}
 
 	const printHour = () => {
-		debugger
+		// debugger
 		var temp = new Date(nextMatch.datetime)
 		var hour = `${temp.getHours() < 10 ? `0${temp.getHours()}` : temp.getHours()}`
 		var minutes = `${temp.getMinutes() < 10 ? `0${temp.getMinutes()}` : temp.getMinutes()}`
@@ -21,7 +21,11 @@ const Match = () => {
 	}
 
 	const getNextMatch = () => {
-		api.get("/api/v1/matches")
+		api.get("/api/v1/surveys", {
+			params: {
+				active: true,
+			},
+		})
 		.then((response) => {
 			console.log(response)
 			setNextMatch(response.data[0])
